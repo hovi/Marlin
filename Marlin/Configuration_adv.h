@@ -193,7 +193,7 @@
 // When first starting the main fan, run it at full speed for the
 // given number of milliseconds.  This gets the fan spinning reliably
 // before setting a PWM value. (Does not work with software PWM for fan on Sanguinololu)
-//#define FAN_KICKSTART_TIME 100
+#define FAN_KICKSTART_TIME 500
 
 // This defines the minimal speed for the main fan, run in PWM mode
 // to enable uncomment and set minimal PWM speed for reliable running (1-255)
@@ -294,7 +294,7 @@
   #endif
 #endif
 
-//#define Z_DUAL_STEPPER_DRIVERS
+#define Z_DUAL_STEPPER_DRIVERS
 #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
   //#define Z_DUAL_ENDSTOPS
   #if ENABLED(Z_DUAL_ENDSTOPS)
@@ -377,7 +377,7 @@
 #define DEFAULT_STEPPER_DEACTIVE_TIME 120
 #define DISABLE_INACTIVE_X true
 #define DISABLE_INACTIVE_Y true
-#define DISABLE_INACTIVE_Z true  // set to false if the nozzle will fall down on your printed part when print has finished.
+#define DISABLE_INACTIVE_Z false  // set to false if the nozzle will fall down on your printed part when print has finished.
 #define DISABLE_INACTIVE_E true
 
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
@@ -569,7 +569,7 @@
     // Enable this to show messages for MSG_TIME then hide them
     //#define PROGRESS_MSG_ONCE
     // Add a menu item to test the progress bar:
-    //#define LCD_PROGRESS_BAR_TEST
+    #define LCD_PROGRESS_BAR_TEST
   #endif
 
   // Add an 'M73' G-code to set the current percentage
@@ -676,10 +676,10 @@
  * K=0 means advance disabled.
  * See Marlin documentation for calibration instructions.
  */
-//#define LIN_ADVANCE
+#define LIN_ADVANCE
 
 #if ENABLED(LIN_ADVANCE)
-  #define LIN_ADVANCE_K 75
+  #define LIN_ADVANCE_K 30
 
   /**
    * Some Slicers produce Gcode with randomly jumping extrusion widths occasionally.
@@ -815,7 +815,7 @@
 // enter the serial receive buffer, so they cannot be blocked.
 // Currently handles M108, M112, M410
 // Does not work on boards using AT90USB (USBCON) processors!
-//#define EMERGENCY_PARSER
+#define EMERGENCY_PARSER
 
 // Bad Serial-connections can miss a received command by sending an 'ok'
 // Therefore some clients abort after 30 seconds in a timeout.
@@ -873,11 +873,15 @@
  * If PARK_HEAD_ON_PAUSE enabled, adds the GCode M125 to pause printing and park the nozzle.
  *
  * Requires an LCD display.
- * Requires NOZZLE_PARK_FEATURE.
  * This feature is required for the default FILAMENT_RUNOUT_SCRIPT.
  */
-//#define ADVANCED_PAUSE_FEATURE
+#define ADVANCED_PAUSE_FEATURE
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
+//  #define PAUSE_PARK_X_POS 3                  // X position of hotend
+//  #define PAUSE_PARK_Y_POS 3                  // Y position of hotend
+//  #define PAUSE_PARK_Z_ADD 10                 // Z addition of hotend (lift)
+//  #define PAUSE_PARK_XY_FEEDRATE 100          // X and Y axes feedrate in mm/s (also used for delta printers Z axis)
+//  #define PAUSE_PARK_Z_FEEDRATE 5             // Z axis feedrate in mm/s (not used for delta printers)
   #define PAUSE_PARK_RETRACT_FEEDRATE 60      // Initial retract feedrate in mm/s
   #define PAUSE_PARK_RETRACT_LENGTH 2         // Initial retract in mm
                                               // It is a short retract used immediately after print interrupt before move to filament exchange position
@@ -899,7 +903,7 @@
   #define FILAMENT_CHANGE_NUMBER_OF_ALERT_BEEPS 5 // Number of alert beeps before printer goes quiet
   #define PAUSE_PARK_NO_STEPPER_TIMEOUT       // Enable to have stepper motors hold position during filament change
                                               // even if it takes longer than DEFAULT_STEPPER_DEACTIVE_TIME.
-  //#define PARK_HEAD_ON_PAUSE                // Go to filament change position on pause, return to print position on resume
+  #define PARK_HEAD_ON_PAUSE                // Go to filament change position on pause, return to print position on resume
   //#define HOME_BEFORE_FILAMENT_CHANGE       // Ensure homing has been completed prior to parking for filament change
 #endif
 
@@ -1338,7 +1342,8 @@
   #define FILAMENT_SENSOR_EXTRUDER_NUM 0    // Index of the extruder that has the filament sensor. :[0,1,2,3,4]
   #define MEASUREMENT_DELAY_CM        14    // (cm) The distance from the filament sensor to the melting chamber
 
-  #define FILWIDTH_ERROR_MARGIN        1.0  // (mm) If a measurement differs too much from nominal width ignore it
+  #define MEASURED_UPPER_LIMIT         3.30 // (mm) Upper limit used to validate sensor reading
+  #define MEASURED_LOWER_LIMIT         1.90 // (mm) Lower limit used to validate sensor reading
   #define MAX_MEASUREMENT_DELAY       20    // (bytes) Buffer size for stored measurements (1 byte per cm). Must be larger than MEASUREMENT_DELAY_CM.
 
   #define DEFAULT_MEASURED_FILAMENT_DIA DEFAULT_NOMINAL_FILAMENT_DIA // Set measured to nominal initially
@@ -1371,20 +1376,13 @@
 #define EXTENDED_CAPABILITIES_REPORT
 
 /**
- * Disable all Volumetric extrusion options
+ * Volumetric extrusion default state
+ * Activate to make volumetric extrusion the default method,
+ * with DEFAULT_NOMINAL_FILAMENT_DIA as the default diameter.
+ *
+ * M200 D0 to disable, M200 Dn to set a new diameter.
  */
-//#define NO_VOLUMETRICS
-
-#if DISABLED(NO_VOLUMETRICS)
-  /**
-   * Volumetric extrusion default state
-   * Activate to make volumetric extrusion the default method,
-   * with DEFAULT_NOMINAL_FILAMENT_DIA as the default diameter.
-   *
-   * M200 D0 to disable, M200 Dn to set a new diameter.
-   */
-  //#define VOLUMETRIC_DEFAULT_ON
-#endif
+//#define VOLUMETRIC_DEFAULT_ON
 
 /**
  * Enable this option for a leaner build of Marlin that removes all
@@ -1440,14 +1438,6 @@
  * The host must be configured to handle the action command.
  */
 //#define ACTION_ON_KILL "poweroff"
-
-/**
- * Specify an action command to send to the host on pause and resume.
- * Will be sent in the form '//action:ACTION_ON_PAUSE', e.g. '//action:pause'.
- * The host must be configured to handle the action command.
- */
-//#define ACTION_ON_PAUSE "pause"
-//#define ACTION_ON_RESUME "resume"
 
 //===========================================================================
 //====================== I2C Position Encoder Settings ======================
